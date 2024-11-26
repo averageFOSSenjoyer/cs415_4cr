@@ -1,0 +1,25 @@
+[package]
+name = "cs415-project"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# github.com/bevyengine/bevy/issues/16120
+bevy = { version = "0.13.1", features = ["wayland"] }
+rand = "0.9.0-beta.0"
+
+[profile.dev]
+opt-level = 0
+debug = "full"
+strip = "none"
+lto = false
+panic = "unwind"
+incremental = true
+
+[profile.release]
+opt-level = 3
+debug = 0
+strip = "debuginfo"
+lto = "fat"
+panic = "abort"
+incremental = true
