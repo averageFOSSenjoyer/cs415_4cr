@@ -1,4 +1,4 @@
-use bevy::{prelude::*, window::*};
+use bevy::prelude::*;
 use cs415_project::animation::AnimationPlugin;
 use cs415_project::camera::CameraPlugin;
 use cs415_project::collision::CollisionPlugin;
@@ -12,8 +12,6 @@ use cs415_project::*;
 
 fn main() {
     App::new()
-        .init_state::<GameState>()
-        .add_systems(Update, close_on_esc)
         .add_plugins(
             DefaultPlugins
                 .set(ImagePlugin::default_nearest())
@@ -35,5 +33,6 @@ fn main() {
         .add_plugins(ResourcesPlugin)
         .add_plugins(WeaponPlugin)
         .add_plugins(WorldPlugin)
+        .init_state::<GameState>()
         .run();
 }
