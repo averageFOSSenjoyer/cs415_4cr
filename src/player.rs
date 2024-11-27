@@ -22,6 +22,7 @@ impl Plugin for PlayerPlugin {
 }
 
 fn handle_player_input(
+    time: Res<Time>,
     mut player_query: Query<&mut Transform, With<Player>>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
 ) {
@@ -51,23 +52,23 @@ fn handle_player_input(
     delta = delta.normalize_or_zero();
     transform.translation.x = if delta.x < 0.0 {
         f32::max(
-            transform.translation.x + delta.x * PLAYER_SPEED,
+            transform.translation.x + delta.x * PLAYER_SPEED * time.delta_seconds(),
             -WORLD_WIDTH,
         )
     } else {
         f32::min(
-            transform.translation.x + delta.x * PLAYER_SPEED,
+            transform.translation.x + delta.x * PLAYER_SPEED * time.delta_seconds(),
             WORLD_WIDTH,
         )
     };
     transform.translation.y = if delta.y < 0.0 {
         f32::max(
-            transform.translation.y + delta.y * PLAYER_SPEED,
+            transform.translation.y + delta.y * PLAYER_SPEED * time.delta_seconds(),
             -WORLD_HEIGHT,
         )
     } else {
         f32::min(
-            transform.translation.y + delta.y * PLAYER_SPEED,
+            transform.translation.y + delta.y * PLAYER_SPEED * time.delta_seconds(),
             WORLD_HEIGHT,
         )
     };

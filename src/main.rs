@@ -33,7 +33,6 @@ fn main() {
         .add_plugins(ResourcesPlugin)
         .add_plugins(WeaponPlugin)
         .add_plugins(WorldPlugin)
-        .add_plugins(bevy_framepace::FramepacePlugin)
         .init_state::<GameState>()
         .run();
 }

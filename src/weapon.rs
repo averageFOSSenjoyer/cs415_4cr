@@ -113,6 +113,7 @@ fn handle_weapon_input(
 }
 
 fn update_projectiles(
+    time: Res<Time>,
     mut projectile_query: Query<(&mut Transform, &ProjectileDirection), With<Projectile>>,
 ) {
     if projectile_query.is_empty() {
@@ -120,6 +121,6 @@ fn update_projectiles(
     }
 
     for (mut transform, direction) in projectile_query.iter_mut() {
-        transform.translation += direction.0.normalize_or_zero() * Vec3::splat(PROJECTILE_SPEED);
+        transform.translation += direction.0.normalize_or_zero() * Vec3::splat(PROJECTILE_SPEED * time.delta_seconds());
     }
 }

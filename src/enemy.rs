@@ -82,6 +82,7 @@ fn spawn_enemies(
 }
 
 fn update_enemy_transform(
+    time: Res<Time>,
     mut enemy_query: Query<&mut Transform, (With<Enemy>, Without<Player>)>,
     player_query: Query<&Transform, With<Player>>,
 ) {
@@ -92,7 +93,7 @@ fn update_enemy_transform(
     let player_position = player_query.single().translation;
     for mut transform in enemy_query.iter_mut() {
         let direction = (player_position - transform.translation).normalize();
-        transform.translation += direction * ENEMY_SPEED;
+        transform.translation += direction * ENEMY_SPEED * time.delta_seconds();
     }
 }
 

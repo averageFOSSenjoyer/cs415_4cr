@@ -6,7 +6,6 @@ use crate::{
 use bevy::app::{App, Plugin};
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
-use bevy_framepace::Limiter;
 
 pub struct ResourcesPlugin;
 
@@ -20,7 +19,7 @@ impl Plugin for ResourcesPlugin {
             )))
             .insert_resource(GlobalTextureAtlas::default())
             .insert_resource(CursorPosition(None))
-            .add_systems(OnEnter(GameState::Loading), (load_assets, set_framerate))
+            .add_systems(OnEnter(GameState::Loading), load_assets)
             .add_systems(
                 Update,
                 update_cursor_position.run_if(in_state(GameState::Gaming)),
@@ -71,10 +70,4 @@ fn update_cursor_position(
         .cursor_position()
         .and_then(|cursor| camera.viewport_to_world(camera_transform, cursor))
         .map(|ray| ray.origin.truncate());
-}
-
-fn set_framerate(
-    mut settings: ResMut<bevy_framepace::FramepaceSettings>,
-) {
-    settings.limiter = Limiter::from_framerate(60.0);
 }
