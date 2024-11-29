@@ -1,8 +1,8 @@
-use crate::{SPRITESHEET_HEIGHT, SPRITESHEET_WIDTH};
+use crate::config::CONFIG;
 
 pub fn get_sprite_index(row_id: u32, col_id: u32) -> usize {
-    assert!(row_id < SPRITESHEET_HEIGHT);
-    assert!(col_id < SPRITESHEET_WIDTH);
+    assert!(row_id < CONFIG.sprite.spritesheet_height);
+    assert!(col_id < CONFIG.sprite.spritesheet_width);
 
-    (row_id * SPRITESHEET_WIDTH + col_id) as usize
+    (row_id * CONFIG.sprite.spritesheet_width + col_id) as usize
 }

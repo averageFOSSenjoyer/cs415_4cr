@@ -3,10 +3,6 @@ use crate::player::Player;
 use crate::resources::GlobalTextureAtlas;
 use crate::state::GameState;
 use crate::util::get_sprite_index;
-use crate::{
-    ANIMATION_TICK_DURATION, ENEMY_HEALTH, ENEMY_SPAWN_INTERVAL, ENEMY_SPEED, MAX_NUM_ENEMIES,
-    SPRITE_SCALE_FACTOR, WORLD_HEIGHT, WORLD_WIDTH,
-};
 use bevy::app::{App, Plugin};
 use bevy::math::vec3;
 use bevy::prelude::*;
@@ -14,6 +10,8 @@ use bevy::time::common_conditions::on_timer;
 use bevy::time::Stopwatch;
 use rand::Rng;
 use std::time::Duration;
+use crate::config::CONFIG;
+use crate::xp_ball::XPBall;
 
 #[derive(Component)]
 pub struct Enemy {
@@ -24,7 +22,7 @@ pub struct Enemy {
 impl Default for Enemy {
     fn default() -> Self {
         Self {
-            health: ENEMY_HEALTH,
+            health: CONFIG.enemy.enemy_health,
             attack_timer: Stopwatch::new(),
         }
     }
@@ -38,7 +36,7 @@ impl Plugin for EnemyPlugin {
             Update,
             spawn_enemies
                 .run_if(in_state(GameState::Gaming))
-                .run_if(on_timer(Duration::from_secs_f32(ENEMY_SPAWN_INTERVAL))),
+                .run_if(on_timer(Duration::from_secs_f32(CONFIG.enemy.enemy_spawn_interval))),
         )
         .add_systems(
             Update,
@@ -59,21 +57,21 @@ fn spawn_enemies(
     enemy_query: Query<&Transform, (With<Player>, Without<Enemy>)>,
 ) {
     let num_enemies = enemy_query.iter().len();
-    let enemies_spawn_count = (MAX_NUM_ENEMIES - num_enemies).min(5);
+    let enemies_spawn_count = (CONFIG.enemy.max_num_enemies - num_enemies).min(5);
 
-    if num_enemies >= MAX_NUM_ENEMIES || player_query.is_empty() {
+    if num_enemies >= CONFIG.enemy.max_num_enemies || player_query.is_empty() {
         return;
     }
 
     let mut rng = rand::rng();
     for _ in 0..enemies_spawn_count {
-        let x = rng.random_range(-WORLD_WIDTH..WORLD_WIDTH);
-        let y = rng.random_range(-WORLD_HEIGHT..WORLD_HEIGHT);
+        let x = rng.random_range(-CONFIG.game.world_width..CONFIG.game.world_width);
+        let y = rng.random_range(-CONFIG.game.world_height..CONFIG.game.world_height);
         commands.spawn((
             SpriteBundle {
                 texture: texture_handle.image.clone().unwrap(),
                 transform: Transform::from_translation(vec3(x, y, 1.0))
-                    .with_scale(Vec3::splat(SPRITE_SCALE_FACTOR)),
+                    .with_scale(Vec3::splat(CONFIG.sprite.sprite_scale_factor)),
                 ..default()
             },
             TextureAtlas {
@@ -82,7 +80,7 @@ fn spawn_enemies(
             },
             Enemy::default(),
             AnimationTimer(Timer::from_seconds(
-                ANIMATION_TICK_DURATION,
+                CONFIG.game.animation_tick_interval,
                 TimerMode::Repeating,
             )),
         ));
@@ -101,21 +99,23 @@ fn update_enemy_transform(
     let player_position = player_query.single().translation;
     for mut transform in enemy_query.iter_mut() {
         let direction = (player_position - transform.translation).normalize();
-        transform.translation += direction * ENEMY_SPEED * time.delta_seconds();
+        transform.translation += direction * CONFIG.enemy.enemy_speed * time.delta_seconds();
     }
 }
 
 fn despawn_dead_enemy(
     mut commands: Commands,
-    enemy_query: Query<(&Enemy, Entity), With<Enemy>>,
+    enemy_query: Query<(&Transform, &Enemy, Entity), With<Enemy>>,
     mut player_query: Query<&mut Player, With<Player>>,
+    texture_handle: Res<GlobalTextureAtlas>,
 ) {
     if enemy_query.is_empty() {
         return;
     }
 
-    for (enemy, entity) in enemy_query.iter() {
+    for (enemy_transform, enemy, entity) in enemy_query.iter() {
         if enemy.health <= 0.0 {
+            XPBall::spawn(&mut commands, enemy_transform.translation, &texture_handle);
             commands.entity(entity).despawn();
             for mut player in player_query.iter_mut() {
                 player.xp += 1;

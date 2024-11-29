@@ -2,8 +2,8 @@ use crate::enemy::Enemy;
 use crate::player::Player;
 use crate::state::GameState;
 use crate::util::get_sprite_index;
-use crate::SPRITESHEET_WIDTH;
 use bevy::prelude::*;
+use crate::config::CONFIG;
 
 #[derive(Component, Deref, DerefMut)]
 pub struct AnimationTimer(pub Timer);
@@ -49,7 +49,7 @@ fn animate_enemy(mut enemy_query: Query<(&mut TextureAtlas, &mut AnimationTimer)
     for (mut texture_atlas, timer) in enemy_query.iter_mut() {
         if timer.just_finished() {
             texture_atlas.index = get_sprite_index(3, 0)
-                + ((texture_atlas.index + 1) % (SPRITESHEET_WIDTH as usize)) % 6;
+                + ((texture_atlas.index + 1) % (CONFIG.sprite.spritesheet_width as usize)) % 6;
         }
     }
 }

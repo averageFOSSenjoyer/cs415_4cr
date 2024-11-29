@@ -2,15 +2,13 @@ use crate::animation::AnimationTimer;
 use crate::resources::GlobalTextureAtlas;
 use crate::state::GameState;
 use crate::util::get_sprite_index;
-use crate::{
-    ANIMATION_TICK_DURATION, PLAYER_SPEED, SPRITE_SCALE_FACTOR, WORLD_HEIGHT, WORLD_WIDTH,
-};
 use bevy::app::{App, Plugin, Update};
 use bevy::color::palettes::tailwind;
 use bevy::input::ButtonInput;
 use bevy::math::Vec2;
 use bevy::prelude::*;
 use bevy_progressbar::{ProgressBar, ProgressBarBundle, ProgressBarMaterial, ProgressBarPlugin};
+use crate::config::CONFIG;
 
 #[derive(Component)]
 pub struct Player {
@@ -33,7 +31,7 @@ impl Plugin for PlayerPlugin {
             init_player.run_if(in_state(GameState::Initializing))
         ).add_systems(
             Update,
-            (handle_player_input, update_player_health_bar, check_player_death).run_if(in_state(GameState::Gaming)),
+            (handle_player_input, update_player_health_bar, check_player_death, handle_player_xp).run_if(in_state(GameState::Gaming)),
         ).add_plugins(
             ProgressBarPlugin
         );
@@ -49,7 +47,7 @@ fn init_player(
     commands.spawn((
         SpriteBundle {
             texture: texture_handle.image.clone().unwrap(),
-            transform: Transform::from_scale(Vec3::splat(SPRITE_SCALE_FACTOR)),
+            transform: Transform::from_scale(Vec3::splat(CONFIG.sprite.sprite_scale_factor)),
             ..default()
         },
         TextureAtlas {
@@ -58,7 +56,7 @@ fn init_player(
         },
         Player::default(),
         AnimationTimer(Timer::from_seconds(
-            ANIMATION_TICK_DURATION,
+            CONFIG.game.animation_tick_interval,
             TimerMode::Repeating,
         )),
     ));
@@ -119,24 +117,24 @@ fn handle_player_input(
     delta = delta.normalize_or_zero();
     transform.translation.x = if delta.x < 0.0 {
         f32::max(
-            transform.translation.x + delta.x * PLAYER_SPEED * time.delta_seconds(),
-            -WORLD_WIDTH,
+            transform.translation.x + delta.x * CONFIG.player.movement_speed * time.delta_seconds(),
+            -CONFIG.game.world_width,
         )
     } else {
         f32::min(
-            transform.translation.x + delta.x * PLAYER_SPEED * time.delta_seconds(),
-            WORLD_WIDTH,
+            transform.translation.x + delta.x * CONFIG.player.movement_speed * time.delta_seconds(),
+            CONFIG.game.world_width,
         )
     };
     transform.translation.y = if delta.y < 0.0 {
         f32::max(
-            transform.translation.y + delta.y * PLAYER_SPEED * time.delta_seconds(),
-            -WORLD_HEIGHT,
+            transform.translation.y + delta.y * CONFIG.player.movement_speed * time.delta_seconds(),
+            -CONFIG.game.world_height,
         )
     } else {
         f32::min(
-            transform.translation.y + delta.y * PLAYER_SPEED * time.delta_seconds(),
-            WORLD_HEIGHT,
+            transform.translation.y + delta.y * CONFIG.player.movement_speed * time.delta_seconds(),
+            CONFIG.game.world_height,
         )
     };
     transform.translation.z = 10.0;
@@ -158,5 +156,16 @@ fn check_player_death(
     let player = player_query.single();
     if player.health <= 0.0 {
         next_state.set(GameState::Dying);
+    }
+}
+
+fn handle_player_xp(
+    mut player_query: Query<&mut Player, With<Player>>,
+) {
+    for mut player in player_query.iter_mut() {
+        if player.xp >= 10 {
+            player.xp = 0;
+
+        }
     }
 }

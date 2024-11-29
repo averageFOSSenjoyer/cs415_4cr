@@ -2,12 +2,12 @@ use crate::player::Player;
 use crate::resources::{CursorPosition, GlobalTextureAtlas};
 use crate::state::GameState;
 use crate::util::get_sprite_index;
-use crate::{ATTACK_INTERVAL, PROJECTILE_SPEED, SPRITE_SCALE_FACTOR};
 use bevy::app::{App, Plugin};
 use bevy::math::{vec2, vec3, Quat, Vec3};
 use bevy::prelude::*;
 use bevy::time::Stopwatch;
 use std::f32::consts::PI;
+use crate::config::CONFIG;
 
 #[derive(Component)]
 pub struct Weapon;
@@ -46,7 +46,7 @@ fn init_weapon(
     commands.spawn((
         SpriteBundle {
             texture: texture_handle.image.clone().unwrap(),
-            transform: Transform::from_scale(Vec3::splat(SPRITE_SCALE_FACTOR)),
+            transform: Transform::from_scale(Vec3::splat(CONFIG.sprite.sprite_scale_factor)),
             ..default()
         },
         TextureAtlas {
@@ -109,7 +109,7 @@ fn handle_weapon_input(
     let weapon_position = weapon_transform.translation.truncate();
     weapon_timer.0.tick(time.delta());
 
-    if !mouse_input.pressed(MouseButton::Left) || weapon_timer.0.elapsed_secs() < ATTACK_INTERVAL {
+    if !mouse_input.pressed(MouseButton::Left) || weapon_timer.0.elapsed_secs() < CONFIG.player.attack_interval {
         return;
     }
 
@@ -127,7 +127,7 @@ fn handle_weapon_input(
         SpriteBundle {
             texture: texture_handle.image.clone().unwrap(),
             transform: Transform::from_translation(vec3(weapon_position.x, weapon_position.y, 1.0))
-                .with_scale(Vec3::splat(SPRITE_SCALE_FACTOR)),
+                .with_scale(Vec3::splat(CONFIG.sprite.sprite_scale_factor)),
             ..default()
         },
         TextureAtlas {
@@ -149,6 +149,6 @@ fn update_projectiles(
 
     for (mut transform, direction) in projectile_query.iter_mut() {
         transform.translation +=
-            direction.0.normalize_or_zero() * Vec3::splat(PROJECTILE_SPEED * time.delta_seconds());
+            direction.0.normalize_or_zero() * Vec3::splat(CONFIG.player.projectile_speed * time.delta_seconds());
     }
 }

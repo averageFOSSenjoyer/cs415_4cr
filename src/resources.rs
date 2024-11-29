@@ -1,11 +1,8 @@
 use crate::state::GameState;
-use crate::{
-    BACKGROUND_COLOR, SPRITESHEET_HEIGHT, SPRITESHEET_PATH, SPRITESHEET_WIDTH, SPRITE_HEIGHT,
-    SPRITE_WIDTH,
-};
 use bevy::app::{App, Plugin};
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
+use crate::config::CONFIG;
 
 pub struct ResourcesPlugin;
 
@@ -13,9 +10,9 @@ impl Plugin for ResourcesPlugin {
     fn build(&self, app: &mut App) {
         app.insert_resource(Msaa::Off)
             .insert_resource(ClearColor(Color::srgb_u8(
-                BACKGROUND_COLOR.0,
-                BACKGROUND_COLOR.1,
-                BACKGROUND_COLOR.2,
+                CONFIG.game.background_color.0,
+                CONFIG.game.background_color.1,
+                CONFIG.game.background_color.2,
             )))
             .insert_resource(GlobalTextureAtlas::default())
             .insert_resource(CursorPosition(None))
@@ -42,11 +39,11 @@ fn load_assets(
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
     mut next_state: ResMut<NextState<GameState>>,
 ) {
-    texture_handle.image = Some(asset_server.load(SPRITESHEET_PATH));
+    texture_handle.image = Some(asset_server.load(CONFIG.sprite.spritesheet_path.clone()));
     let layout = TextureAtlasLayout::from_grid(
-        UVec2::new(SPRITE_HEIGHT, SPRITE_WIDTH),
-        SPRITESHEET_WIDTH,
-        SPRITESHEET_HEIGHT,
+        UVec2::new(CONFIG.sprite.sprite_height, CONFIG.sprite.sprite_width),
+        CONFIG.sprite.spritesheet_width,
+        CONFIG.sprite.spritesheet_height,
         None,
         None,
     );

@@ -2,9 +2,9 @@ use crate::enemy::Enemy;
 use crate::player::Player;
 use crate::state::GameState;
 use crate::weapon::Projectile;
-use crate::PROJECTILE_DAMAGE;
 use bevy::app::{App, Plugin};
 use bevy::prelude::*;
+use crate::config::CONFIG;
 
 pub struct CollisionPlugin;
 
@@ -37,7 +37,7 @@ fn handle_enemy_projectile_collision(
                 .distance_squared(enemy_transform.translation)
                 <= 250.0
             {
-                enemy.health -= PROJECTILE_DAMAGE;
+                enemy.health -= CONFIG.player.projectile_damage;
                 commands.entity(projectile_entity).despawn();
             }
         }
