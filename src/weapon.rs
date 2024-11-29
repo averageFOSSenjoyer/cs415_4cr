@@ -24,6 +24,10 @@ impl Plugin for WeaponPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
+            init_weapon.run_if(in_state(GameState::Initializing))
+        )
+            .add_systems(
+            Update,
             (
                 update_weapon_transform,
                 handle_weapon_input,
@@ -33,6 +37,29 @@ impl Plugin for WeaponPlugin {
         );
     }
 }
+
+fn init_weapon(
+    mut commands: Commands,
+    texture_handle: Res<GlobalTextureAtlas>,
+    mut next_state: ResMut<NextState<GameState>>,
+) {
+    commands.spawn((
+        SpriteBundle {
+            texture: texture_handle.image.clone().unwrap(),
+            transform: Transform::from_scale(Vec3::splat(SPRITE_SCALE_FACTOR)),
+            ..default()
+        },
+        TextureAtlas {
+            layout: texture_handle.layout.clone().unwrap(),
+            index: get_sprite_index(5, 0),
+        },
+        Weapon,
+        WeaponTimer(Stopwatch::new()),
+    ));
+
+    next_state.set(GameState::Gaming);
+}
+
 
 fn update_weapon_transform(
     cursor_position: Res<CursorPosition>,
@@ -121,6 +148,7 @@ fn update_projectiles(
     }
 
     for (mut transform, direction) in projectile_query.iter_mut() {
-        transform.translation += direction.0.normalize_or_zero() * Vec3::splat(PROJECTILE_SPEED * time.delta_seconds());
+        transform.translation +=
+            direction.0.normalize_or_zero() * Vec3::splat(PROJECTILE_SPEED * time.delta_seconds());
     }
 }

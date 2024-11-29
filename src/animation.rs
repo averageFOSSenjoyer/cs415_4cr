@@ -48,8 +48,8 @@ fn animate_enemy(mut enemy_query: Query<(&mut TextureAtlas, &mut AnimationTimer)
 
     for (mut texture_atlas, timer) in enemy_query.iter_mut() {
         if timer.just_finished() {
-            texture_atlas.index =
-                get_sprite_index(3, 0) + ((texture_atlas.index + 1) % (SPRITESHEET_WIDTH as usize)) % 6;
+            texture_atlas.index = get_sprite_index(3, 0)
+                + ((texture_atlas.index + 1) % (SPRITESHEET_WIDTH as usize)) % 6;
         }
     }
 }

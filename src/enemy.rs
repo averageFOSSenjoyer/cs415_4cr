@@ -11,18 +11,21 @@ use bevy::app::{App, Plugin};
 use bevy::math::vec3;
 use bevy::prelude::*;
 use bevy::time::common_conditions::on_timer;
+use bevy::time::Stopwatch;
 use rand::Rng;
 use std::time::Duration;
 
 #[derive(Component)]
 pub struct Enemy {
     pub health: f32,
+    pub attack_timer: Stopwatch,
 }
 
 impl Default for Enemy {
     fn default() -> Self {
         Self {
             health: ENEMY_HEALTH,
+            attack_timer: Stopwatch::new(),
         }
     }
 }
@@ -39,7 +42,12 @@ impl Plugin for EnemyPlugin {
         )
         .add_systems(
             Update,
-            (update_enemy_transform, despawn_dead_enemy).run_if(in_state(GameState::Gaming)),
+            (
+                update_enemy_transform,
+                despawn_dead_enemy,
+                update_enemy_attack_timer,
+            )
+                .run_if(in_state(GameState::Gaming)),
         );
     }
 }
@@ -113,5 +121,11 @@ fn despawn_dead_enemy(
                 player.xp += 1;
             }
         }
+    }
+}
+
+fn update_enemy_attack_timer(time: Res<Time>, mut enemy_query: Query<&mut Enemy, With<Enemy>>) {
+    for mut enemy in enemy_query.iter_mut() {
+        enemy.attack_timer.tick(time.delta());
     }
 }

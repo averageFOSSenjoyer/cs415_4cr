@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 # github.com/bevyengine/bevy/issues/16120
 bevy = { version = "0.14.2", features = ["wayland", "dynamic_linking"] }
+bevy-progressbar = "0.8.0"
 rand = "0.9.0-beta.0"
 
 [profile.dev]

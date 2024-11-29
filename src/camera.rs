@@ -35,5 +35,5 @@ fn camera_follow_player(
     let player_transform = player_query.single().translation;
     let (x, y) = (player_transform.x, player_transform.y);
 
-    camera_transform.translation = camera_transform.translation.lerp(vec3(x, y, 0.0), 0.1);
+    camera_transform.translation = vec3(x, y, 0.0);
 }
