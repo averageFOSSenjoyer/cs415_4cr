@@ -27,7 +27,7 @@ attack_interval = 1.0
 projectile_speed = 600.0
 projectile_damage = 1.0
 movement_speed_multiplier_inc = 0.1
-attack_speed_multiplier_inc = 1.0
+attack_speed_multiplier_inc = 0.1
 xp_ball_pickup_range_multiplier_inc = 0.1
 health_per_lvlup = 0.25
 

@@ -159,6 +159,7 @@ fn check_player_death(
 fn handle_player_xp(mut player_query: Query<&mut Player, With<Player>>) {
     for mut player in player_query.iter_mut() {
         if player.xp >= 5 + player.level * 3 {
+            player.level += 1;
             player.xp -= 5 + player.level * 3;
             player.health = (player.health + CONFIG.player.health_per_lvlup).min(1.0);
             let mut rng = rand::rng();
