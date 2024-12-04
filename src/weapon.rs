@@ -96,7 +96,7 @@ fn handle_weapon_input(
     mut commands: Commands,
     time: Res<Time>,
     mut weapon_query: Query<(&Transform, &mut WeaponTimer), With<Weapon>>,
-    player_query: Query<&Transform, With<Player>>,
+    player_query: Query<(&Transform, &Player), With<Player>>,
     mouse_input: Res<ButtonInput<MouseButton>>,
     texture_handle: Res<GlobalTextureAtlas>,
 ) {
@@ -108,13 +108,14 @@ fn handle_weapon_input(
     let weapon_position = weapon_transform.translation.truncate();
     weapon_timer.0.tick(time.delta());
 
+    let (player_transform, player) = player_query.single();
+    let player_position = player_transform.translation.truncate();
+
     if !mouse_input.pressed(MouseButton::Left)
-        || weapon_timer.0.elapsed_secs() < CONFIG.player.attack_interval
+        || weapon_timer.0.elapsed_secs() < CONFIG.player.attack_interval / player.attack_speed_multiplier
     {
         return;
     }
-
-    let player_position = player_query.single().translation;
 
     // due to mirroring, we need to which side the weapon is on
     let projectile_direction = if weapon_transform.translation.x - player_position.x < 0.0 {

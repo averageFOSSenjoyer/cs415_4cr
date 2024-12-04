@@ -7,16 +7,21 @@ use bevy::app::{App, Plugin, Update};
 use bevy::input::ButtonInput;
 use bevy::math::Vec2;
 use bevy::prelude::*;
+use rand::Rng;
 
 #[derive(Component)]
 pub struct Player {
     pub xp: u32,
+    pub level: u32,
     pub health: f32,
+    pub attack_speed_multiplier: f32,
+    pub movement_speed_multiplier: f32,
+    pub xp_ball_pickup_range_multiplier: f32,
 }
 
 impl Default for Player {
     fn default() -> Self {
-        Self { xp: 0, health: 1.0 }
+        Self { xp: 0, level: 0, health: 1.0, attack_speed_multiplier: 1.0, movement_speed_multiplier: 1.0, xp_ball_pickup_range_multiplier: 1.0 }
     }
 }
 
@@ -63,14 +68,14 @@ fn init_player(
 
 fn handle_player_input(
     time: Res<Time>,
-    mut player_query: Query<&mut Transform, With<Player>>,
+    mut player_query: Query<(&mut Transform, &Player), With<Player>>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
 ) {
     if player_query.is_empty() {
         return;
     }
 
-    let mut transform = player_query.single_mut();
+    let (mut transform, player) = player_query.single_mut();
     let w_key_pressed = keyboard_input.pressed(KeyCode::KeyW);
     let a_key_pressed = keyboard_input.pressed(KeyCode::KeyA);
     let s_key_pressed = keyboard_input.pressed(KeyCode::KeyS);
@@ -92,27 +97,28 @@ fn handle_player_input(
     delta = delta.normalize_or_zero();
     transform.translation.x = if delta.x < 0.0 {
         f32::max(
-            transform.translation.x + delta.x * CONFIG.player.movement_speed * time.delta_secs(),
+            transform.translation.x + player.movement_speed_multiplier * delta.x * CONFIG.player.movement_speed * time.delta_secs(),
             -CONFIG.game.world_width,
         )
     } else {
         f32::min(
-            transform.translation.x + delta.x * CONFIG.player.movement_speed * time.delta_secs(),
+            transform.translation.x + player.movement_speed_multiplier *delta.x * CONFIG.player.movement_speed * time.delta_secs(),
             CONFIG.game.world_width,
         )
     };
     transform.translation.y = if delta.y < 0.0 {
         f32::max(
-            transform.translation.y + delta.y * CONFIG.player.movement_speed * time.delta_secs(),
+            transform.translation.y + player.movement_speed_multiplier *delta.y * CONFIG.player.movement_speed * time.delta_secs(),
             -CONFIG.game.world_height,
         )
     } else {
         f32::min(
-            transform.translation.y + delta.y * CONFIG.player.movement_speed * time.delta_secs(),
+            transform.translation.y + player.movement_speed_multiplier *delta.y * CONFIG.player.movement_speed * time.delta_secs(),
             CONFIG.game.world_height,
         )
     };
-    transform.translation.z = 10.0;
+
+    transform.translation.z = 10.0; // keep player above
 }
 
 fn check_player_death(
@@ -127,8 +133,21 @@ fn check_player_death(
 
 fn handle_player_xp(mut player_query: Query<&mut Player, With<Player>>) {
     for mut player in player_query.iter_mut() {
-        if player.xp >= 10 {
-            player.xp = 0;
+        if player.xp >= 5 + player.level * 3 {
+            println!("lvlup!");
+            player.xp -= 5 + player.level * 3;
+            let mut rng = rand::rng();
+            let num = rng.random_range(0..10);
+            if num < 3 {
+                player.movement_speed_multiplier += 0.1;
+                println!("mvmt speed inc!");
+            } else if num < 6 {
+                player.attack_speed_multiplier += 0.1;
+                println!("atk speed inc!");
+            } else {
+                player.xp_ball_pickup_range_multiplier += 0.1;
+                println!("xp range inc!");
+            }
         }
     }
 }

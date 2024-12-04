@@ -24,7 +24,6 @@ opt-level = 3
 debug = 0
 strip = "debuginfo"
 lto = "fat"
-panic = "abort"
 incremental = true
 
 [profile.release-wasm]

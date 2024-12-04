@@ -51,7 +51,7 @@ fn handle_player_pickup_xp(
             if player_transform
                 .translation
                 .distance_squared(xp_ball_transform.translation)
-                <= 1500.0
+                <= 2500.0 * player.xp_ball_pickup_range_multiplier
             {
                 player.xp += 1;
                 commands.entity(xp_ball_entity).despawn();
