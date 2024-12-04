@@ -112,7 +112,8 @@ fn handle_weapon_input(
     let player_position = player_transform.translation.truncate();
 
     if !mouse_input.pressed(MouseButton::Left)
-        || weapon_timer.0.elapsed_secs() < CONFIG.player.attack_interval / player.attack_speed_multiplier
+        || weapon_timer.0.elapsed_secs()
+            < CONFIG.player.attack_interval / player.attack_speed_multiplier
     {
         return;
     }

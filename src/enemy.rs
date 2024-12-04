@@ -60,16 +60,25 @@ fn spawn_enemies(
     enemy_query: Query<&Transform, (With<Player>, Without<Enemy>)>,
 ) {
     let num_enemies = enemy_query.iter().len();
-    let enemies_spawn_count = (CONFIG.enemy.max_num_enemies - num_enemies).min(5);
+    let enemies_spawn_count =
+        (CONFIG.enemy.max_num_enemies - num_enemies).min(CONFIG.enemy.num_per_wave);
 
     if num_enemies >= CONFIG.enemy.max_num_enemies || player_query.is_empty() {
         return;
     }
 
+    let player_transform = player_query.single();
+
     let mut rng = rand::rng();
     for _ in 0..enemies_spawn_count {
-        let x = rng.random_range(-CONFIG.game.world_width..CONFIG.game.world_width);
-        let y = rng.random_range(-CONFIG.game.world_height..CONFIG.game.world_height);
+        let mut x = rng.random_range(-CONFIG.game.world_width..CONFIG.game.world_width);
+        while (x - player_transform.translation.x).abs() <= CONFIG.app.window_width / 2.0 {
+            x = rng.random_range(-CONFIG.game.world_width..CONFIG.game.world_width);
+        }
+        let mut y = rng.random_range(-CONFIG.game.world_height..CONFIG.game.world_height);
+        while (y - player_transform.translation.y).abs() <= CONFIG.app.window_height / 2.0 {
+            y = rng.random_range(-CONFIG.game.world_width..CONFIG.game.world_width);
+        }
         commands.spawn((
             Enemy::default(),
             Sprite {
@@ -109,7 +118,6 @@ fn update_enemy_transform(
 fn despawn_dead_enemy(
     mut commands: Commands,
     enemy_query: Query<(&Transform, &Enemy, Entity), With<Enemy>>,
-    mut player_query: Query<&mut Player, With<Player>>,
     texture_handle: Res<GlobalTextureAtlas>,
 ) {
     if enemy_query.is_empty() {
@@ -120,9 +128,6 @@ fn despawn_dead_enemy(
         if enemy.health <= 0.0 {
             XPBall::spawn(&mut commands, enemy_transform.translation, &texture_handle);
             commands.entity(entity).despawn();
-            for mut player in player_query.iter_mut() {
-                player.xp += 1;
-            }
         }
     }
 }

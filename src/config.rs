@@ -90,6 +90,10 @@ pub struct PlayerConfig {
     pub attack_interval: f32,
     pub projectile_speed: f32,
     pub projectile_damage: f32,
+    pub movement_speed_multiplier_inc: f32,
+    pub attack_speed_multiplier_inc: f32,
+    pub xp_ball_pickup_range_multiplier_inc: f32,
+    pub health_per_lvlup: f32,
 }
 
 impl Default for PlayerConfig {
@@ -99,6 +103,10 @@ impl Default for PlayerConfig {
             attack_interval: 1.0,
             projectile_speed: 600.0,
             projectile_damage: 1.0,
+            movement_speed_multiplier_inc: 0.1,
+            attack_speed_multiplier_inc: 0.1,
+            xp_ball_pickup_range_multiplier_inc: 0.1,
+            health_per_lvlup: 0.25,
         }
     }
 }
@@ -109,6 +117,7 @@ pub struct EnemyConfig {
     pub enemy_spawn_interval: f32,
     pub enemy_health: f32,
     pub enemy_speed: f32,
+    pub num_per_wave: usize,
 }
 
 impl Default for EnemyConfig {
@@ -118,6 +127,7 @@ impl Default for EnemyConfig {
             enemy_spawn_interval: 2.0,
             enemy_health: 1.0,
             enemy_speed: 125.0,
+            num_per_wave: 5,
         }
     }
 }
