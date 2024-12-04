@@ -1,6 +1,6 @@
-use std::env;
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
+use std::env;
 
 lazy_static! {
     pub static ref CONFIG: Config = if let Ok(config_file_str) = env::var("CONFIG_FILE") {

@@ -1,10 +1,10 @@
+use crate::config::CONFIG;
 use crate::enemy::Enemy;
 use crate::player::Player;
 use crate::state::GameState;
 use crate::weapon::Projectile;
 use bevy::app::{App, Plugin};
 use bevy::prelude::*;
-use crate::config::CONFIG;
 
 pub struct CollisionPlugin;
 

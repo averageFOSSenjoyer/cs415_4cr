@@ -1,9 +1,9 @@
+use crate::config::CONFIG;
 use crate::enemy::Enemy;
 use crate::player::Player;
 use crate::state::GameState;
 use crate::util::get_sprite_index;
 use bevy::prelude::*;
-use crate::config::CONFIG;
 
 #[derive(Component, Deref, DerefMut)]
 pub struct AnimationTimer(pub Timer);
@@ -29,25 +29,27 @@ fn animation_timer_tick(
     }
 }
 
-fn animate_player(mut player_query: Query<(&mut TextureAtlas, &mut AnimationTimer), With<Player>>) {
+fn animate_player(mut player_query: Query<(&mut Sprite, &mut AnimationTimer), With<Player>>) {
     if player_query.is_empty() {
         return;
     }
 
-    for (mut texture_atlas, timer) in player_query.iter_mut() {
+    for (mut sprite, timer) in player_query.iter_mut() {
         if timer.just_finished() {
+            let texture_atlas = sprite.texture_atlas.as_mut().unwrap();
             texture_atlas.index = (texture_atlas.index + 1) % 6;
         }
     }
 }
 
-fn animate_enemy(mut enemy_query: Query<(&mut TextureAtlas, &mut AnimationTimer), With<Enemy>>) {
+fn animate_enemy(mut enemy_query: Query<(&mut Sprite, &mut AnimationTimer), With<Enemy>>) {
     if enemy_query.is_empty() {
         return;
     }
 
-    for (mut texture_atlas, timer) in enemy_query.iter_mut() {
+    for (mut sprite, timer) in enemy_query.iter_mut() {
         if timer.just_finished() {
+            let texture_atlas = sprite.texture_atlas.as_mut().unwrap();
             texture_atlas.index = get_sprite_index(3, 0)
                 + ((texture_atlas.index + 1) % (CONFIG.sprite.spritesheet_width as usize)) % 6;
         }

@@ -1,3 +1,4 @@
+use crate::config::CONFIG;
 use crate::player::Player;
 use crate::resources::{CursorPosition, GlobalTextureAtlas};
 use crate::state::GameState;
@@ -7,7 +8,6 @@ use bevy::math::{vec2, vec3, Quat, Vec3};
 use bevy::prelude::*;
 use bevy::time::Stopwatch;
 use std::f32::consts::PI;
-use crate::config::CONFIG;
 
 #[derive(Component)]
 pub struct Weapon;
@@ -24,9 +24,9 @@ impl Plugin for WeaponPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            init_weapon.run_if(in_state(GameState::Initializing))
+            init_weapon.run_if(in_state(GameState::Initializing)),
         )
-            .add_systems(
+        .add_systems(
             Update,
             (
                 update_weapon_transform,
@@ -44,22 +44,21 @@ fn init_weapon(
     mut next_state: ResMut<NextState<GameState>>,
 ) {
     commands.spawn((
-        SpriteBundle {
-            texture: texture_handle.image.clone().unwrap(),
-            transform: Transform::from_scale(Vec3::splat(CONFIG.sprite.sprite_scale_factor)),
+        Weapon,
+        Sprite {
+            image: texture_handle.image.clone().unwrap(),
+            texture_atlas: Some(TextureAtlas {
+                layout: texture_handle.layout.clone().unwrap(),
+                index: get_sprite_index(5, 0),
+            }),
             ..default()
         },
-        TextureAtlas {
-            layout: texture_handle.layout.clone().unwrap(),
-            index: get_sprite_index(5, 0),
-        },
-        Weapon,
+        Transform::from_scale(Vec3::splat(CONFIG.sprite.sprite_scale_factor)),
         WeaponTimer(Stopwatch::new()),
     ));
 
     next_state.set(GameState::Gaming);
 }
-
 
 fn update_weapon_transform(
     cursor_position: Res<CursorPosition>,
@@ -109,7 +108,9 @@ fn handle_weapon_input(
     let weapon_position = weapon_transform.translation.truncate();
     weapon_timer.0.tick(time.delta());
 
-    if !mouse_input.pressed(MouseButton::Left) || weapon_timer.0.elapsed_secs() < CONFIG.player.attack_interval {
+    if !mouse_input.pressed(MouseButton::Left)
+        || weapon_timer.0.elapsed_secs() < CONFIG.player.attack_interval
+    {
         return;
     }
 
@@ -124,17 +125,17 @@ fn handle_weapon_input(
 
     weapon_timer.0.reset();
     commands.spawn((
-        SpriteBundle {
-            texture: texture_handle.image.clone().unwrap(),
-            transform: Transform::from_translation(vec3(weapon_position.x, weapon_position.y, 1.0))
-                .with_scale(Vec3::splat(CONFIG.sprite.sprite_scale_factor)),
+        Projectile,
+        Sprite {
+            image: texture_handle.image.clone().unwrap(),
+            texture_atlas: Some(TextureAtlas {
+                layout: texture_handle.layout.clone().unwrap(),
+                index: get_sprite_index(5, 1),
+            }),
             ..default()
         },
-        TextureAtlas {
-            layout: texture_handle.layout.clone().unwrap(),
-            index: get_sprite_index(5, 1),
-        },
-        Projectile,
+        Transform::from_translation(vec3(weapon_position.x, weapon_position.y, 1.0))
+            .with_scale(Vec3::splat(CONFIG.sprite.sprite_scale_factor)),
         ProjectileDirection(*projectile_direction),
     ));
 }
@@ -148,7 +149,7 @@ fn update_projectiles(
     }
 
     for (mut transform, direction) in projectile_query.iter_mut() {
-        transform.translation +=
-            direction.0.normalize_or_zero() * Vec3::splat(CONFIG.player.projectile_speed * time.delta_seconds());
+        transform.translation += direction.0.normalize_or_zero()
+            * Vec3::splat(CONFIG.player.projectile_speed * time.delta_secs());
     }
 }

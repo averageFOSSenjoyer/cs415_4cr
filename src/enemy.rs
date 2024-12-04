@@ -1,8 +1,10 @@
 use crate::animation::AnimationTimer;
+use crate::config::CONFIG;
 use crate::player::Player;
 use crate::resources::GlobalTextureAtlas;
 use crate::state::GameState;
 use crate::util::get_sprite_index;
+use crate::xp_ball::XPBall;
 use bevy::app::{App, Plugin};
 use bevy::math::vec3;
 use bevy::prelude::*;
@@ -10,10 +12,9 @@ use bevy::time::common_conditions::on_timer;
 use bevy::time::Stopwatch;
 use rand::Rng;
 use std::time::Duration;
-use crate::config::CONFIG;
-use crate::xp_ball::XPBall;
 
 #[derive(Component)]
+#[require(Sprite)]
 pub struct Enemy {
     pub health: f32,
     pub attack_timer: Stopwatch,
@@ -36,7 +37,9 @@ impl Plugin for EnemyPlugin {
             Update,
             spawn_enemies
                 .run_if(in_state(GameState::Gaming))
-                .run_if(on_timer(Duration::from_secs_f32(CONFIG.enemy.enemy_spawn_interval))),
+                .run_if(on_timer(Duration::from_secs_f32(
+                    CONFIG.enemy.enemy_spawn_interval,
+                ))),
         )
         .add_systems(
             Update,
@@ -68,17 +71,17 @@ fn spawn_enemies(
         let x = rng.random_range(-CONFIG.game.world_width..CONFIG.game.world_width);
         let y = rng.random_range(-CONFIG.game.world_height..CONFIG.game.world_height);
         commands.spawn((
-            SpriteBundle {
-                texture: texture_handle.image.clone().unwrap(),
-                transform: Transform::from_translation(vec3(x, y, 1.0))
-                    .with_scale(Vec3::splat(CONFIG.sprite.sprite_scale_factor)),
+            Enemy::default(),
+            Sprite {
+                image: texture_handle.image.clone().unwrap(),
+                texture_atlas: Some(TextureAtlas {
+                    layout: texture_handle.layout.clone().unwrap(),
+                    index: get_sprite_index(3, 0),
+                }),
                 ..default()
             },
-            TextureAtlas {
-                layout: texture_handle.layout.clone().unwrap(),
-                index: get_sprite_index(3, 0),
-            },
-            Enemy::default(),
+            Transform::from_translation(vec3(x, y, 1.0))
+                .with_scale(Vec3::splat(CONFIG.sprite.sprite_scale_factor)),
             AnimationTimer(Timer::from_seconds(
                 CONFIG.game.animation_tick_interval,
                 TimerMode::Repeating,
@@ -99,7 +102,7 @@ fn update_enemy_transform(
     let player_position = player_query.single().translation;
     for mut transform in enemy_query.iter_mut() {
         let direction = (player_position - transform.translation).normalize();
-        transform.translation += direction * CONFIG.enemy.enemy_speed * time.delta_seconds();
+        transform.translation += direction * CONFIG.enemy.enemy_speed * time.delta_secs()
     }
 }
 

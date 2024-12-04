@@ -1,26 +1,25 @@
+use crate::config::CONFIG;
 use crate::state::GameState;
 use bevy::app::{App, Plugin};
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
-use crate::config::CONFIG;
 
 pub struct ResourcesPlugin;
 
 impl Plugin for ResourcesPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(Msaa::Off)
-            .insert_resource(ClearColor(Color::srgb_u8(
-                CONFIG.game.background_color.0,
-                CONFIG.game.background_color.1,
-                CONFIG.game.background_color.2,
-            )))
-            .insert_resource(GlobalTextureAtlas::default())
-            .insert_resource(CursorPosition(None))
-            .add_systems(OnEnter(GameState::Loading), load_assets)
-            .add_systems(
-                Update,
-                update_cursor_position.run_if(in_state(GameState::Gaming)),
-            );
+        app.insert_resource(ClearColor(Color::srgb_u8(
+            CONFIG.game.background_color.0,
+            CONFIG.game.background_color.1,
+            CONFIG.game.background_color.2,
+        )))
+        .insert_resource(GlobalTextureAtlas::default())
+        .insert_resource(CursorPosition(None))
+        .add_systems(OnEnter(GameState::Loading), load_assets)
+        .add_systems(
+            Update,
+            update_cursor_position.run_if(in_state(GameState::Gaming)),
+        );
     }
 }
 
@@ -65,6 +64,6 @@ fn update_cursor_position(
     let window = window_query.single();
     cursor_position.0 = window
         .cursor_position()
-        .and_then(|cursor| camera.viewport_to_world(camera_transform, cursor))
+        .and_then(|cursor| camera.viewport_to_world(camera_transform, cursor).ok())
         .map(|ray| ray.origin.truncate());
 }

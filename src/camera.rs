@@ -3,7 +3,7 @@ use crate::state::GameState;
 use bevy::app::{App, Plugin, Update};
 use bevy::math::vec3;
 use bevy::prelude::{
-    in_state, Camera, Camera2dBundle, Commands, IntoSystemConfigs, OnEnter, Query, Transform, With,
+    in_state, Camera, Camera2d, Commands, IntoSystemConfigs, OnEnter, Query, Transform, With,
     Without,
 };
 
@@ -20,7 +20,7 @@ impl Plugin for CameraPlugin {
 }
 
 fn init_camera(mut commands: Commands) {
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn(Camera2d::default());
 }
 
 fn camera_follow_player(
